@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Site Sign In – Yarra Valley Commercial</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yvc-orange: #E8531A;
+    --yvc-orange-dark: #C44210;
+    --yvc-orange-light: #FFF0EB;
+    --yvc-dark: #1A1A1A;
+    --yvc-mid: #444;
+    --yvc-muted: #888;
+    --yvc-border: #E2E2E2;
+    --yvc-bg: #F8F7F5;
+    --yvc-white: #FFFFFF;
+    --yvc-green: #1A7A4A;
+    --yvc-green-light: #E8F5EE;
+    --yvc-red: #C0392B;
+    --yvc-red-light: #FDEEEC;
+    --yvc-amber: #B8610A;
+    --yvc-amber-light: #FEF3E2;
+    --radius: 14px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.08);
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--yvc-bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--yvc-dark);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    background: var(--yvc-dark);
+    padding: 20px 24px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-mark {
+    width: 42px;
+    height: 42px;
+    background: var(--yvc-orange);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 24px; height: 24px; }
+
+  .header-text h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+  }
+
+  /* Site pill */
+  .site-pill {
+    margin: 16px 20px 0;
+    background: var(--yvc-white);
+    border: 1px solid var(--yvc-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .site-pill-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--yvc-orange-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .site-pill-icon svg { width: 16px; height: 16px; color: var(--yvc-orange); }
+
+  .site-pill-text .label { font-size: 11px; color: var(--yvc-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .site-pill-text .name { font-size: 14px; font-weight: 600; color: var(--yvc-dark); margin-top: 2px; }
+  .site-pill-text .addr { font-size: 12px; color: var(--yvc-muted); margin-top: 1px; }
+
+  /* GPS status */
+  .gps-bar {
+    margin: 10px 20px 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+  }
+
+  .gps-bar.checking { background: #F0F0F0; color: var(--yvc-muted); }
+  .gps-bar.ok { background: var(--yvc-green-light); color: var(--yvc-green); }
+  .gps-bar.outside { background: var(--yvc-amber-light); color: var(--yvc-amber); }
+  .gps-bar.denied { background: var(--yvc-red-light); color: var(--yvc-red); }
+
+  .gps-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    background: currentColor;
+  }
+
+  .gps-dot.pulse {
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* Main content */
+  .main { flex: 1; padding: 16px 20px 32px; }
+
+  /* Status card (shown when already signed in) */
+  .status-card {
+    background: var(--yvc-white);
+    border: 1px solid var(--yvc-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .status-card.visible { display: block; }
+
+  .status-card .status-label {
+    font-size: 11px;
+    color: var(--yvc-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-card .status-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--yvc-dark);
+    margin-top: 4px;
+  }
+
+  .status-card .status-company {
+    font-size: 14px;
+    color: var(--yvc-muted);
+    margin-top: 2px;
+  }
+
+  .status-time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--yvc-border);
+  }
+
+  .signed-in-badge {
+    background: var(--yvc-green-light);
+    color: var(--yvc-green);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .status-time {
+    font-size: 13px;
+    color: var(--yvc-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Form */
+  .form-section {
+    background: var(--yvc-white);
+    border: 1px solid var(--yvc-border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .form-section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--yvc-dark);
+    margin-bottom: 16px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--yvc-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid var(--yvc-border);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--yvc-dark);
+    background: #FAFAFA;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--yvc-orange);
+    background: var(--yvc-white);
+  }
+
+  .field input::placeholder { color: #BDBDBD; }
+
+  /* Buttons */
+  .btn-signin {
+    width: 100%;
+    padding: 17px;
+    background: var(--yvc-orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 17px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    transition: background 0.2s, transform 0.1s;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+  }
+
+  .btn-signin:active { background: var(--yvc-orange-dark); transform: scale(0.99); }
+  .btn-signin:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-signout {
+    width: 100%;
+    padding: 17px;
+    background: var(--yvc-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 17px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    transition: background 0.2s, transform 0.1s;
+    margin-bottom: 10px;
+    -webkit-appearance: none;
+  }
+
+  .btn-signout:active { background: #333; transform: scale(0.99); }
+  .btn-signout:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    color: var(--yvc-muted);
+    border: 1.5px solid var(--yvc-border);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .btn-secondary:active { background: #F0F0F0; }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .success-screen.visible { display: block; }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .success-icon.in { background: var(--yvc-green-light); }
+  .success-icon.out { background: #F0F0F0; }
+
+  .success-icon svg { width: 36px; height: 36px; }
+
+  .success-screen h2 { font-size: 24px; font-weight: 600; color: var(--yvc-dark); }
+  .success-screen .sub { font-size: 15px; color: var(--yvc-muted); margin-top: 8px; }
+  .success-screen .time-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--yvc-orange);
+    margin: 20px 0 8px;
+  }
+  .success-screen .date-display { font-size: 14px; color: var(--yvc-muted); }
+
+  .success-detail {
+    background: var(--yvc-white);
+    border: 1px solid var(--yvc-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 24px 0;
+    text-align: left;
+  }
+
+  .success-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .success-detail-row:not(:last-child) { border-bottom: 1px solid var(--yvc-border); }
+  .success-detail-row .key { font-size: 12px; color: var(--yvc-muted); font-weight: 500; }
+  .success-detail-row .val { font-size: 13px; font-weight: 600; color: var(--yvc-dark); }
+
+  /* Warning banner */
+  .warning-banner {
+    background: var(--yvc-amber-light);
+    border: 1px solid #F0C060;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--yvc-amber);
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  .warning-banner.visible { display: block; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--yvc-muted);
+    padding: 0 20px 24px;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Yarra Valley Commercial</h1>
+      <p>Site Sign In / Sign Out</p>
+    </div>
+  </div>
+
+  <!-- Site info -->
+  <div class="site-pill">
+    <div class="site-pill-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+    </div>
+    <div class="site-pill-text">
+      <div class="label">Active site</div>
+      <div class="name">Hi Tech Ct</div>
+      <div class="addr">29-31 Hi Tech Ct, Croydon South VIC 3136</div>
+    </div>
+  </div>
+
+  <!-- GPS status -->
+  <div class="gps-bar checking" id="gpsBar">
+    <div class="gps-dot pulse" id="gpsDot"></div>
+    <span id="gpsText">Checking your location…</span>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Warning (outside geofence) -->
+    <div class="warning-banner" id="warnBanner">
+      Your location appears to be outside the site boundary. Your submission will be flagged for review.
+    </div>
+
+    <!-- Already signed in status card -->
+    <div class="status-card" id="statusCard">
+      <div class="status-label">Currently signed in as</div>
+      <div class="status-name" id="statusName">–</div>
+      <div class="status-company" id="statusCompany">–</div>
+      <div class="status-time-row">
+        <span class="signed-in-badge">On site</span>
+        <span class="status-time" id="statusSince">–</span>
+      </div>
+    </div>
+
+    <!-- Sign in form -->
+    <div class="form-section" id="formSection">
+      <h2 id="formTitle">Sign in</h2>
+
+      <div class="field" id="nameField">
+        <label for="fullName">Full name</label>
+        <input type="text" id="fullName" placeholder="Your full name" autocomplete="name" autocorrect="off">
+      </div>
+
+      <div class="field" id="phoneField">
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone" placeholder="04XX XXX XXX" autocomplete="tel">
+      </div>
+
+      <div class="field" id="companyField">
+        <label for="company">Company</label>
+        <input type="text" id="company" placeholder="Your company name" autocomplete="organization" autocorrect="off">
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div id="btnArea">
+      <button class="btn-signin" id="btnSignIn" onclick="submitSignIn()">Sign in</button>
+      <button class="btn-signout hidden" id="btnSignOut" onclick="submitSignOut()">Sign out</button>
+      <button class="btn-secondary hidden" id="btnNotMe" onclick="resetForm()">Not me</button>
+    </div>
+
+    <!-- Success screen -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon" id="successIcon">
+        <svg id="successSvg" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2 id="successTitle">Signed in</h2>
+      <div class="sub" id="successSub">Welcome to site</div>
+      <div class="time-display" id="successTime"></div>
+      <div class="date-display" id="successDate"></div>
+      <div class="success-detail" id="successDetail"></div>
+      <button class="btn-secondary" onclick="resetAfterSuccess()">Done</button>
+    </div>
+
+  </div>
+
+  <div class="footer">Yarra Valley Commercial · Site attendance system</div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION — update SHEET_URL after Phase 2 setup
+// ============================================================
+const CONFIG = {
+  SITE_NAME: "Hi Tech Ct – Croydon South",
+  SITE_LAT: -37.8158,
+  SITE_LNG: 145.2763,
+  GEOFENCE_RADIUS_M: 200,
+  SHEET_URL: "https://script.google.com/macros/s/AKfycbywiEyFBBFk2flA2vsoQa43yDwRylYK-y5zJnj0l_hfTQvFywGRtDn4XslJju-tty8ZXg/exec"
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let gpsCoords = null;
+let gpsOnSite = null;
+let currentRecord = null; // existing sign-in from localStorage
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadExistingRecord();
+  requestGPS();
+});
+
+// ============================================================
+// LOCAL STORAGE — tracks today's sign-in on this device
+// ============================================================
+function todayKey() {
+  const d = new Date();
+  return `yvc_signin_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+}
+
+function loadExistingRecord() {
+  const raw = localStorage.getItem(todayKey());
+  if (!raw) return;
+  try {
+    const rec = JSON.parse(raw);
+    if (rec && rec.name && rec.signInTime && !rec.signOutTime) {
+      currentRecord = rec;
+      showSignedInState(rec);
+    }
+  } catch(e) {}
+}
+
+function saveRecord(rec) {
+  localStorage.setItem(todayKey(), JSON.stringify(rec));
+}
+
+// ============================================================
+// GPS
+// ============================================================
+function requestGPS() {
+  if (!navigator.geolocation) {
+    setGpsBar('denied', 'Location not available on this device');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const dist = haversineM(gpsCoords.lat, gpsCoords.lng, CONFIG.SITE_LAT, CONFIG.SITE_LNG);
+      gpsOnSite = dist <= CONFIG.GEOFENCE_RADIUS_M;
+      if (gpsOnSite) {
+        setGpsBar('ok', `On site · ${Math.round(dist)}m from site centre`);
+      } else {
+        setGpsBar('outside', `${Math.round(dist)}m from site · Outside boundary`);
+        document.getElementById('warnBanner').classList.add('visible');
+      }
+    },
+    err => {
+      setGpsBar('denied', 'Location access denied – submission will be flagged');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function setGpsBar(state, msg) {
+  const bar = document.getElementById('gpsBar');
+  const dot = document.getElementById('gpsDot');
+  bar.className = 'gps-bar ' + state;
+  document.getElementById('gpsText').textContent = msg;
+  dot.classList.remove('pulse');
+}
+
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ============================================================
+// UI STATE
+// ============================================================
+function showSignedInState(rec) {
+  document.getElementById('statusCard').classList.add('visible');
+  document.getElementById('statusName').textContent = rec.name;
+  document.getElementById('statusCompany').textContent = rec.company;
+  document.getElementById('statusSince').textContent = 'Signed in at ' + rec.signInTime;
+
+  // Hide name/company fields, show sign-out
+  document.getElementById('nameField').classList.add('hidden');
+  document.getElementById('phoneField').classList.add('hidden');
+  document.getElementById('companyField').classList.add('hidden');
+  document.getElementById('formTitle').textContent = 'Ready to leave?';
+  document.getElementById('btnSignIn').classList.add('hidden');
+  document.getElementById('btnSignOut').classList.remove('hidden');
+  document.getElementById('btnNotMe').classList.remove('hidden');
+
+  // Pre-fill hidden values
+  document.getElementById('fullName').value = rec.name;
+  document.getElementById('phone').value = rec.phone;
+  document.getElementById('company').value = rec.company;
+}
+
+function resetForm() {
+  currentRecord = null;
+  localStorage.removeItem(todayKey());
+  document.getElementById('statusCard').classList.remove('visible');
+  document.getElementById('nameField').classList.remove('hidden');
+  document.getElementById('phoneField').classList.remove('hidden');
+  document.getElementById('companyField').classList.remove('hidden');
+  document.getElementById('formTitle').textContent = 'Sign in';
+  document.getElementById('fullName').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('company').value = '';
+  document.getElementById('btnSignIn').classList.remove('hidden');
+  document.getElementById('btnSignOut').classList.add('hidden');
+  document.getElementById('btnNotMe').classList.add('hidden');
+}
+
+function resetAfterSuccess() {
+  document.getElementById('successScreen').classList.remove('visible');
+  document.getElementById('btnArea').classList.remove('hidden');
+  document.getElementById('formSection').classList.remove('hidden');
+  loadExistingRecord();
+}
+
+// ============================================================
+// SIGN IN
+// ============================================================
+async function submitSignIn() {
+  const name = document.getElementById('fullName').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const company = document.getElementById('company').value.trim();
+
+  if (!name) { alert('Please enter your full name.'); return; }
+  if (!company) { alert('Please enter your company name.'); return; }
+
+  const now = new Date();
+  const timeStr = formatTime(now);
+  const dateStr = formatDate(now);
+
+  const record = {
+    name, phone, company,
+    site: CONFIG.SITE_NAME,
+    signInTime: timeStr,
+    signInDate: dateStr,
+    signOutTime: null,
+    lat: gpsCoords ? gpsCoords.lat.toFixed(6) : 'unknown',
+    lng: gpsCoords ? gpsCoords.lng.toFixed(6) : 'unknown',
+    onSite: gpsOnSite,
+    type: 'SIGN_IN'
+  };
+
+  saveRecord(record);
+  currentRecord = record;
+
+  const btn = document.getElementById('btnSignIn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
+
+  await sendToSheet(record);
+
+  showSuccess('in', name, company, timeStr, dateStr);
+}
+
+// ============================================================
+// SIGN OUT
+// ============================================================
+async function submitSignOut() {
+  const now = new Date();
+  const timeStr = formatTime(now);
+  const dateStr = formatDate(now);
+
+  const record = {
+    ...currentRecord,
+    signOutTime: timeStr,
+    signOutDate: dateStr,
+    signOutLat: gpsCoords ? gpsCoords.lat.toFixed(6) : 'unknown',
+    signOutLng: gpsCoords ? gpsCoords.lng.toFixed(6) : 'unknown',
+    type: 'SIGN_OUT'
+  };
+
+  const saved = { ...record };
+  localStorage.removeItem(todayKey());
+  currentRecord = null;
+
+  const btn = document.getElementById('btnSignOut');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
+
+  await sendToSheet(record);
+
+  showSuccess('out', saved.name, saved.company, timeStr, dateStr, saved.signInTime);
+}
+
+// ============================================================
+// SHOW SUCCESS
+// ============================================================
+function showSuccess(type, name, company, time, date, signedInAt) {
+  document.getElementById('formSection').classList.add('hidden');
+  document.getElementById('statusCard').classList.remove('visible');
+  document.getElementById('btnArea').classList.add('hidden');
+
+  const screen = document.getElementById('successScreen');
+  const icon = document.getElementById('successIcon');
+  const svg = document.getElementById('successSvg');
+
+  if (type === 'in') {
+    icon.className = 'success-icon in';
+    svg.setAttribute('stroke', '#1A7A4A');
+    svg.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    document.getElementById('successTitle').textContent = 'Signed in';
+    document.getElementById('successSub').textContent = 'Welcome to site, ' + name.split(' ')[0];
+  } else {
+    icon.className = 'success-icon out';
+    svg.setAttribute('stroke', '#444');
+    svg.innerHTML = '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>';
+    document.getElementById('successTitle').textContent = 'Signed out';
+    document.getElementById('successSub').textContent = 'See you next time, ' + name.split(' ')[0];
+  }
+
+  document.getElementById('successTime').textContent = time;
+  document.getElementById('successDate').textContent = date;
+
+  let rows = [
+    { key: 'Name', val: name },
+    { key: 'Company', val: company },
+    { key: 'Site', val: CONFIG.SITE_NAME },
+  ];
+  if (type === 'out' && signedInAt) {
+    rows.push({ key: 'Signed in at', val: signedInAt });
+  }
+  rows.push({ key: 'Location', val: gpsOnSite === true ? 'On site ✓' : gpsOnSite === false ? 'Outside boundary ⚠' : 'Not verified' });
+
+  document.getElementById('successDetail').innerHTML = rows.map(r =>
+    `<div class="success-detail-row"><span class="key">${r.key}</span><span class="val">${r.val}</span></div>`
+  ).join('');
+
+  screen.classList.add('visible');
+}
+
+// ============================================================
+// SEND TO GOOGLE SHEET
+// ============================================================
+async function sendToSheet(record) {
+  if (!CONFIG.SHEET_URL) {
+    console.log('Sheet URL not configured yet. Record:', record);
+    return;
+  }
+  try {
+    const url = CONFIG.SHEET_URL + '?data=' + encodeURIComponent(JSON.stringify(record));
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+  } catch(e) {
+    console.warn('Sheet submission failed (will retry on next page load):', e);
+  }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function formatTime(d) {
+  return d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+</script>
+</body>
+</html>
